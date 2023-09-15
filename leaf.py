@@ -47,6 +47,25 @@ class Leaf(object):
 
         return verts, faces, u_v
 
+    @classmethod
+    def get_shape_custom(cls, custom_obj):
+        """determine the geometry of the custom leaf object"""
+        data = custom_obj.data
+
+        faces = []
+        for face in data.polygons:
+            face_verts = []
+            for vert in face.vertices:
+                face_verts.append(vert)
+            faces.append(face_verts)
+
+        vertices = []
+        for vertex in data.vertices:
+            vertices.append(vertex.co)
+
+        return vertices, faces
+
+
     def get_mesh(self, bend, base_shape, index):
         """produce leaf mesh at position of this leaf given base mesh as input"""
 

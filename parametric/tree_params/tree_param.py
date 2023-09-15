@@ -38,6 +38,7 @@ defaults = {
     'leaf_scale': 0.17,
     'leaf_scale_x': 1,
     'leaf_bend': 0.6,
+    'leaf_custom_object': None,
     'blossom_shape': 1,
     'blossom_scale': 0,
     'blossom_rate': 0,

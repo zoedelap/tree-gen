@@ -147,7 +147,8 @@ class TreeGen(bpy.types.Operator):
     leaf_shape_options = (
         ('1', 'Ovate', 'Ovate'), ('2', 'Linear', 'Linear'), ('3', 'Cordate', 'Cordate'), ('4', 'Maple', 'Maple'),
         ('5', 'Palmate', 'Palmate'), ('6', 'Spiky Oak', 'Spiky Oak'), ('7', 'Rounded Oak', 'Rounded Oak'),
-        ('8', 'Elliptic', 'Elliptic'), ('9', 'Rectangle', 'Rectangle'), ('10', 'Triangle', 'Triangle')
+        ('8', 'Elliptic', 'Elliptic'), ('9', 'Rectangle', 'Rectangle'), ('10', 'Triangle', 'Triangle'),
+        ('11', 'Custom', 'Custom')
     )
     _scene.tree_leaf_shape_input = _props.EnumProperty(name="", description="Predefined leaf shapes, rectangle is easiest if wishing to use an image texture", items=leaf_shape_options, default='3')
 
@@ -159,6 +160,9 @@ class TreeGen(bpy.types.Operator):
 
     # Amount of leaf bend towards sunlight
     _scene.tree_leaf_bend_input = _props.FloatProperty(name="", description="Fractional amount by which leaves are reoriented to face the light (upwards and outwards)", default=.6, min=0, max=1)
+
+    # Object to use for custom leaf
+    _scene.tree_leaf_custom_object_input = _props.PointerProperty(type=bpy.types.Object, name="", description="Object to use for custom shape leaves")
 
     # ----
     # Blossom configuration
@@ -273,9 +277,9 @@ class TreeGen(bpy.types.Operator):
                        'base_size', 'down_angle', 'down_angle_v', 'rotate', 'rotate_v', 'branches',
                        'length', 'length_v', 'taper', 'seg_splits', 'split_angle', 'split_angle_v', 'bevel_res',
                        'curve_res', 'curve', 'curve_back', 'curve_v', 'bend_v', 'branch_dist', 'radius_mod',
-                       'leaf_blos_num', 'leaf_shape', 'leaf_scale', 'leaf_scale_x', 'leaf_bend', 'blossom_shape',
-                       'blossom_scale', 'blossom_rate', 'tropism', 'prune_ratio', 'prune_width', 'prune_width_peak',
-                       'prune_power_low', 'prune_power_high', 'base_splits']
+                       'leaf_blos_num', 'leaf_shape', 'leaf_scale', 'leaf_scale_x', 'leaf_bend', 'leaf_custom_object', 
+                       'blossom_shape', 'blossom_scale', 'blossom_rate', 'tropism', 'prune_ratio', 'prune_width', 
+                       'prune_width_peak', 'prune_power_low', 'prune_power_high', 'base_splits']
 
         params = {}
         for name in param_names:
@@ -284,7 +288,11 @@ class TreeGen(bpy.types.Operator):
                 if str(type(p)) == "<class 'bpy_prop_array'>":
                     p = list(p)
                 if p is not None:
-                    params[name] = deepcopy(p)
+                    if name == 'leaf_custom_object':
+                        # only store reference to custom leaf objects because copying is expensive
+                        params[name] = p
+                    else:
+                        params[name] = deepcopy(p)
                 else:
                     print('Error while parsing input: {} = {}'.format(name, p))
             except AttributeError:
@@ -495,18 +503,18 @@ class TreeGenCustomisePanel(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
-        def label_row(label, prop, checkbox=False, dropdown=False, container=None):
+        def label_row(label, prop, checkbox=False, dropdown=False, pointer=False, container=None):
             # Helper method to shorten the UI code
             if container is None:
                 container = layout
-            if dropdown:
+            if dropdown or pointer:
                 col = container.column()
                 cont = col.split(factor=0.5, align=True)
                 cont.label(text=label + ':')
             else:
                 cont = container.row()
 
-            if checkbox or dropdown:
+            if checkbox or dropdown or pointer:
                 cont.prop(scene, prop)
             else:
                 cont.prop(scene, prop, text=label)
@@ -520,8 +528,11 @@ class TreeGenCustomisePanel(bpy.types.Panel):
             label_row('Leaf Shape', 'tree_leaf_shape_input', dropdown=True, container=box)
             label_row('Leaf Count', 'tree_leaf_blos_num_input', container=box)
             label_row('Leaf Scale', 'tree_leaf_scale_input', container=box)
-            label_row('Leaf Width', 'tree_leaf_scale_x_input', container=box)
-            label_row('Leaf Bend', 'tree_leaf_bend_input', container=box)
+            if scene.tree_leaf_shape_input != '11':
+                label_row('Leaf Width', 'tree_leaf_scale_x_input', container=box)
+                label_row('Leaf Bend', 'tree_leaf_bend_input', container=box)
+            else: 
+                label_row('Custom Leaf Object', "tree_leaf_custom_object_input", container=box, pointer=True)
             box.separator()
             label_row('Blossom Shape', 'tree_blossom_shape_input', dropdown=True, container=box)
             label_row('Blossom Rate', 'tree_blossom_rate_input', container=box)

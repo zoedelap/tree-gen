@@ -297,8 +297,11 @@ class Tree(object):
         windman.progress_begin(0, len(self.leaves_array))
 
         # go through global leaf array populated in branch making phase and add polygons to mesh
-        base_leaf_shape = Leaf.get_shape(self.param.leaf_shape, self.tree_scale / self.param.g_scale,
-                                         self.param.leaf_scale, self.param.leaf_scale_x)
+        if self.param.leaf_shape == 11:
+            base_leaf_shape = Leaf.get_shape_custom(self.param.leaf_custom_object)
+        else:
+            base_leaf_shape = Leaf.get_shape(self.param.leaf_shape, self.tree_scale / self.param.g_scale,
+                                            self.param.leaf_scale, self.param.leaf_scale_x)
 
         base_blossom_shape = Leaf.get_shape(-self.param.blossom_shape, self.tree_scale / self.param.g_scale,
                                             self.param.blossom_scale, 1)
