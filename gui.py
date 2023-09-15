@@ -70,6 +70,9 @@ class TreeGen(bpy.types.Operator):
     # ======================
     # Tree customizer inputs
 
+    # Low Poly Mode
+    _scene.low_poly_mode_input = _props.BoolProperty(name="Use Low Poly Mode", default=False)
+
     # Tree Shape
     tree_shape_options = (
         ('0', 'Conical', 'Conical'), ('1', 'Spherical', 'Spherical'), ('2', 'Hemispherical', 'Hemispherical'),
@@ -232,7 +235,7 @@ class TreeGen(bpy.types.Operator):
                 return
 
             start_time = time.time()
-            tree = parametric.gen.construct(params, scene.seed_input, scene.generate_leaves_input)
+            tree = parametric.gen.construct(params, scene.seed_input, scene.generate_leaves_input, scene.low_poly_mode_input)
             for o in context.view_layer.objects:
                 o.select_set(False)
             tree.select_set(True)
@@ -529,6 +532,8 @@ class TreeGenCustomisePanel(bpy.types.Panel):
         row = layout.row()
         row.label(text="Tree Parameters:")
         box = layout.box()
+        box.row()
+        label_row('', 'low_poly_mode_input', checkbox=True, container=box)
         box.row()
         label_row('Tree Shape', 'tree_shape_input', dropdown=True, container=box)
         box.separator()

@@ -151,15 +151,16 @@ class Tree(object):
     """Class to store data for the tree"""
 
     __slots__ = (
-        'param', 'generate_leaves', 'leaves_array', 'stem_index', 'tree_scale', 'branch_curves',
+        'param', 'generate_leaves', 'low_poly_mode', 'leaves_array', 'stem_index', 'tree_scale', 'branch_curves',
         'base_length', 'split_num_error', 'tree_obj', 'trunk_length'
     )
 
-    def __init__(self, param, generate_leaves=True):
+    def __init__(self, param, generate_leaves=True, low_poly_mode=False):
         """initialize tree with specified parameters"""
 
         self.param = param
         self.generate_leaves = generate_leaves
+        self.low_poly_mode = low_poly_mode
         self.leaves_array = []
 
         self.stem_index = 0
@@ -248,6 +249,7 @@ class Tree(object):
         if self.param.branches[0] > 0:
             points = self.points_for_floor_split()
 
+        # Trunk(s)
         for ind in range(self.param.branches[0]):
             self.tree_scale = self.param.g_scale + random_uniform(-1, 1) * self.param.g_scale_v
             turtle = CHTurtle()
@@ -673,7 +675,7 @@ class Tree(object):
                         apply_tropism(turtle, Vector([self.param.tropism[0], self.param.tropism[1], 0]))
 
                 # increase point resolution at base of trunk and apply flaring effect
-                if points_per_seg > 2:
+                if points_per_seg > 2 and not self.low_poly_mode:
                     self.increase_bezier_point_res(stem, seg_ind, points_per_seg)
 
         # scale down bezier point handles for flared base of trunk
@@ -1246,7 +1248,7 @@ def scale_bezier_handles_for_flare(stem, max_points_per_seg):
         point.handle_right = point.co + (point.handle_right - point.co) / max_points_per_seg
 
 
-def construct(params, seed=0, generate_leaves=True):
+def construct(params, seed=0, generate_leaves=True, low_poly_mode=False):
     """Construct the tree"""
 
     if seed == 0:
@@ -1257,7 +1259,7 @@ def construct(params, seed=0, generate_leaves=True):
 
     random.seed(seed)
 
-    t = Tree(TreeParam(params), generate_leaves)
+    t = Tree(TreeParam(params), generate_leaves, low_poly_mode)
     t.make()
 
     ret_obj = t.tree_obj
