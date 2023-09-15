@@ -71,7 +71,7 @@ class TreeGen(bpy.types.Operator):
     # Tree customizer inputs
 
     # Low Poly Mode
-    _scene.low_poly_mode_input = _props.BoolProperty(name="Use Low Poly Mode", default=False)
+    _scene.tree_low_poly_mode_input = _props.BoolProperty(name="Use Low Poly Mode", default=False)
 
     # Tree Shape
     tree_shape_options = (
@@ -235,7 +235,7 @@ class TreeGen(bpy.types.Operator):
                 return
 
             start_time = time.time()
-            tree = parametric.gen.construct(params, scene.seed_input, scene.generate_leaves_input, scene.low_poly_mode_input)
+            tree = parametric.gen.construct(params, scene.seed_input, scene.generate_leaves_input)
             for o in context.view_layer.objects:
                 o.select_set(False)
             tree.select_set(True)
@@ -269,7 +269,7 @@ class TreeGen(bpy.types.Operator):
     def get_params_from_customizer(context):
         scene = context.scene
 
-        param_names = ['shape', 'g_scale', 'g_scale_v', 'levels', 'ratio', 'flare', 'ratio_power',
+        param_names = ['low_poly_mode', 'shape', 'g_scale', 'g_scale_v', 'levels', 'ratio', 'flare', 'ratio_power',
                        'base_size', 'down_angle', 'down_angle_v', 'rotate', 'rotate_v', 'branches',
                        'length', 'length_v', 'taper', 'seg_splits', 'split_angle', 'split_angle_v', 'bevel_res',
                        'curve_res', 'curve', 'curve_back', 'curve_v', 'bend_v', 'branch_dist', 'radius_mod',
@@ -533,7 +533,7 @@ class TreeGenCustomisePanel(bpy.types.Panel):
         row.label(text="Tree Parameters:")
         box = layout.box()
         box.row()
-        label_row('', 'low_poly_mode_input', checkbox=True, container=box)
+        label_row('', 'tree_low_poly_mode_input', checkbox=True, container=box)
         box.row()
         label_row('Tree Shape', 'tree_shape_input', dropdown=True, container=box)
         box.separator()

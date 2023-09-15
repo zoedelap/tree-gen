@@ -4,6 +4,7 @@ import sys
 import copy
 
 defaults = {
+    'low_poly_mode': False,
     'shape': 7,
     'g_scale': 13,
     'g_scale_v': 3,
